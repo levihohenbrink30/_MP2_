@@ -1,0 +1,972 @@
+//
+// Levi Hohenbrink
+// MP2
+// 10/29/2021
+// 
+// This CPP Program is a game played by two players where they take turns either building onto
+// their own beetle or consuming a smaller body part on the opposing beetle. A die is rolled and
+// this value is used to determine which body part is built or consumed. Each beetle starts off without
+// any body parts, but are complete when they have a head, a body, 6 legs, 2 eyes, 2 antenna, and
+// a tail. Smaller body parts include legs, eyes, antennae, and the tail. A player wins once their
+// bug is the first one complete.
+//
+
+#include <iostream>
+#include <math.h>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include <cctype>
+
+using namespace std;
+
+
+// Function Prototyping
+
+    int rollDie(void);
+
+    bool isBodyPart(string currentBody, char c);
+
+    bool isBeetleComplete(string currentBody);
+
+    void preHeadUserInput(void);
+
+    char getUserInput(void);
+
+    char convertDieToPart(int roll);
+
+    void preHeadInstructions(string player, string& body);
+
+    void postHeadInstructions(string player, string otherPlayer, string& body, string& otherBody);
+
+    string rollToBodyPart(int roll);
+
+    void build(char bodyPart, string& body);
+
+    void consume(char bodyPart, string& body);
+
+
+// Displaying each players bug
+
+    void printBeetle(string body);
+
+    void printAntenna(string body);
+
+    void printHead(string body);
+
+    void printBody(string body);
+
+    void printLegs(string body);
+
+
+int main() {
+
+    srand((unsigned)time(NULL));
+
+    string player1, player2;
+
+    int turnCounter = 1;
+
+    string body1 = "             ";
+
+    string body2 = "             ";
+
+
+    // Two User Inputs (names)
+
+    cout << "Player 1's name: ";
+
+    getline(cin, player1);
+
+    cout << "Player 2's name: ";
+
+    getline(cin, player2);
+
+
+
+    while (isBeetleComplete(body1) == false && isBeetleComplete(body2) == false) {
+
+        if (turnCounter % 2 == 1 && isBodyPart(body1, 'H') == false) {
+            preHeadInstructions(player1, body1);
+            turnCounter++;
+        }
+
+        else if (turnCounter % 2 == 0 && isBodyPart(body2, 'H') == false) {
+            preHeadInstructions(player2, body2);
+            turnCounter++;
+        }
+
+        else {
+
+            if (turnCounter % 2 == 1) {
+                postHeadInstructions(player1, player2, body1, body2);
+                turnCounter++;
+            }
+
+            else if (turnCounter % 2 == 0) {
+                postHeadInstructions(player2, player1, body2, body1);
+                turnCounter++;
+            }
+
+        }
+
+    }
+
+
+    if (isBeetleComplete(body1) == true) {
+        cout << "\n" << player1 << " is victorious! Congratulations!\n";
+        cout << "Here is their completed bug:\n\n";
+        printBeetle(body1);
+    }
+
+    else if (isBeetleComplete(body2) == true) {
+
+        cout << "\n" << player2 << " is victorious! Congratulations!\n";
+        cout << "Here is their completed bug:\n\n";
+        printBeetle(body2);
+    }
+
+
+    cout << "\nAmount of turns taken to end game: " << turnCounter << endl;
+    return 0;
+}
+
+
+void preHeadInstructions(string player, string& body) {
+
+    cout << "\nIt is " << player << "'s turn." << endl;
+
+    preHeadUserInput();
+
+    int currentRoll = rollDie();
+
+    cout << player << " has rolled a " << currentRoll << ". " << endl;
+
+    cout << "That is equivalent to " << rollToBodyPart(currentRoll) << ".\n";
+
+    build(convertDieToPart(currentRoll), body);
+
+    cout << "\n\n" << player << "'s Beetle: \n";
+
+    printBeetle(body);
+
+    cout << "\n";
+}
+
+
+// Dice Roll 
+
+void postHeadInstructions(string player, string otherPlayer, string& body, string& otherBody) {
+
+    cout << "\nIt is " << player << "'s turn." << endl;
+
+    char input = getUserInput();
+
+    if (input == 'C') {
+
+        int currentRoll = rollDie();
+
+        cout << player << " has rolled a " << currentRoll << ". " << endl;
+
+        cout << "That is equivalent to " << rollToBodyPart(currentRoll) << ".\n";
+
+        consume(convertDieToPart(currentRoll), otherBody);
+
+        cout << "\n\n" << otherPlayer << "'s Beetle: \n";
+
+        printBeetle(otherBody);
+
+        cout << "\n";
+
+    }
+
+
+    else if (input == 'B') {
+
+        int currentRoll = rollDie();
+
+        cout << player << " has rolled a " << currentRoll << ". " << endl;
+
+        cout << "That is equivalent to " << rollToBodyPart(currentRoll) << ".\n";
+
+        build(convertDieToPart(currentRoll), body);
+
+        cout << "\n\n" << player << "'s Beetle: \n";
+
+        printBeetle(body);
+
+        cout << "\n";
+
+    }
+
+}
+
+
+int rollDie(void) {
+
+    int roll = rand() % 6 + 1;                  
+
+    return roll;
+
+}
+
+
+bool isBodyPart(string currentBody, char c) {
+
+    for (int i = 0; i < currentBody.length() - 1; i++) {
+
+        if (currentBody[i] == c) {
+
+            return true;
+
+            break;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+
+// Outputs for Users
+
+bool isBeetleComplete(string currentBody) {
+
+    const string COMPLETE = "BHLLLLLLEEAAT";
+
+    if (currentBody == COMPLETE) {
+
+        return true;
+
+    }
+
+    return false;
+
+}
+
+
+void preHeadUserInput(void) {
+
+    char input = ' ';
+
+    do {
+
+        cout << "Your beetle must have a head before you have the option of consuming.\n";
+
+        cout << "Enter ( B ) to build: ";
+
+        cin >> input;
+
+    } while (toupper(input) != 'B');
+
+    return;
+
+}
+
+
+char getUserInput(void) {
+
+    char input = ' ';
+
+    while (true) {
+
+        cout << "Would you like to build ( B ) or consume ( C )? ";
+
+        cin >> input;
+
+        if (toupper(input) != 'C' && toupper(input) != 'B') {
+
+            cout << "That is not a valid input.\n";
+
+        }
+
+        if (toupper(input) == 'C' || toupper(input) == 'B') {
+
+            break;
+
+        }
+
+    }
+
+    return toupper(input);
+
+}
+
+
+char convertDieToPart(int roll) {
+
+    char bodyPart = ' ';
+
+    switch (roll) {
+
+    case 1: bodyPart = 'B'; break;
+
+    case 2: bodyPart = 'H'; break;
+
+    case 3: bodyPart = 'L'; break;
+
+    case 4: bodyPart = 'E'; break;
+
+    case 5: bodyPart = 'A'; break;
+
+    case 6: bodyPart = 'T'; break;
+
+    default: break;
+
+    }
+
+    return bodyPart;
+
+}
+
+
+string rollToBodyPart(int roll) {
+
+    string bodyPart;
+
+    switch (roll) {
+
+    case 1: bodyPart = "a body"; break;
+
+    case 2: bodyPart = "a head"; break;
+
+    case 3: bodyPart = "a leg"; break;
+
+    case 4: bodyPart = "an eye"; break;
+
+    case 5: bodyPart = "an antenna"; break;
+
+    case 6: bodyPart = "a tail"; break;
+
+    default: break;
+
+    }
+
+    return bodyPart;
+
+}
+
+
+void build(char bodyPart, string& body) {
+
+    switch (bodyPart) {
+
+    case 'B':
+
+        if (isBodyPart(body, 'B') == false) {
+
+            body[0] = 'B';
+
+            cout << "Your beetle has built a body...\n";
+
+        }
+
+        else {
+
+            cout << "Your beetle already has a body...\n";
+
+        }
+
+        break;
+
+
+
+    case 'H':
+
+        if (isBodyPart(body, 'B') == false) {
+
+            cout << "You cannot build a head without a body...\n";
+
+        }
+
+        else {
+
+            if (isBodyPart(body, 'H') == true) {
+
+                cout << "Your beetle already has a head...\n";
+
+            }
+
+            else {
+
+                body[1] = 'H';
+
+                cout << "Your beetle has built a head...\n";
+
+            }
+
+        }
+
+        break;
+
+
+
+    case 'L':
+
+        if (isBodyPart(body, 'B') == false) {
+
+            cout << "You cannot build a leg without a body...\n";
+
+        }
+
+        else {
+
+            if (body.substr(2, 6) == "      ") {
+
+                body[2] = 'L';
+
+                cout << "Your beetle now has a leg...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "L     ") {
+
+                body[3] = 'L';
+
+                cout << "Your beetle has built an additional leg...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LL    ") {
+
+                body[4] = 'L';
+
+                cout << "Your beetle has built an additional leg...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLL   ") {
+
+                body[5] = 'L';
+
+                cout << "Your beetle has built an additional leg...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLLL  ") {
+
+                body[6] = 'L';
+
+                cout << "Your beetle has built an additional leg...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLLLL ") {
+
+                body[7] = 'L';
+
+                cout << "Your beetle has built an additional leg...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLLLLL") {
+
+                cout << "Your beetle already has the maximum number of legs...\n";
+
+            }
+
+        }
+
+        break;
+
+
+
+    case 'E':
+
+        if (isBodyPart(body, 'H') == false) {
+
+            cout << "You cannot build an eye without a head...\n";
+
+        }
+
+        else {
+
+            if (body.substr(8, 2) == "  ") {
+
+                body[8] = 'E';
+
+                cout << "Your beetle has built an eye...\n";
+
+            }
+
+            else if (body.substr(8, 2) == "E ") {
+
+                body[9] = 'E';
+
+                cout << "Your beetle has built an additional eye...\n";
+
+            }
+
+            else if (body.substr(8, 2) == "EE") {
+
+                cout << "Your beetle already has the maximum number of eyes...\n";
+
+            }
+
+        }
+
+        break;
+
+    case 'A':
+
+        if (isBodyPart(body, 'H') == false) {
+
+            cout << "You cannot build an antenna without a head...\n";
+
+        }
+
+        else {
+
+            if (body.substr(10, 2) == "  ") {
+
+                body[10] = 'A';
+
+                cout << "Your beetle has built an antenna...\n";
+
+            }
+
+            else if (body.substr(10, 2) == "A ") {
+
+                body[11] = 'A';
+
+                cout << "Your beetle has built an additional antenna...\n";
+
+            }
+
+            else if (body.substr(10, 2) == "AA") {
+
+                cout << "Your beetle already has the maximum number of antenna...\n";
+
+            }
+
+        }
+
+        break;
+
+
+
+    case 'T':
+
+        if (isBodyPart(body, 'B') == false) {
+
+            cout << "You cannot build a tail without a body...\n";
+
+        }
+
+        else {
+
+            if (body.substr(12, 1) == " ") {
+
+                body[12] = 'T';
+
+                cout << "Your beetle has built a tail...\n";
+
+            }
+
+            else if (body.substr(12, 1) == "T") {
+
+                cout << "Your beetle already has a tail...\n";
+
+            }
+
+        }
+
+        break;
+
+    default: break;
+
+    }
+
+}
+
+
+void consume(char bodyPart, string& body) {
+
+    switch (bodyPart) {
+
+    case 'B':
+
+        cout << "You cannot consume the other beetles body...\n";
+
+        break;
+
+
+
+    case 'H':
+
+        cout << "You cannot consume the other beetles head...\n";
+
+        break;
+
+
+
+    case 'L':
+
+        if (body.substr(2, 6) == "      ") {
+
+            cout << "There are no legs on the other beetle to consume...\n";
+
+        }
+
+        else {
+
+            if (body.substr(2, 6) == "L     ") {
+
+                body[2] = ' ';
+
+                cout << "Your beetle has consumed a leg from your opponent's beetle...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LL    ") {
+
+                body[3] = ' ';
+
+                cout << "Your beetle has consumed a leg from your opponent's beetle...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLL   ") {
+
+                body[4] = ' ';
+
+                cout << "Your beetle has consumed a leg from your opponent's beetle...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLLL  ") {
+
+                body[5] = ' ';
+
+                cout << "Your beetle has consumed a leg from your opponent's beetle...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLLLL ") {
+
+                body[6] = ' ';
+
+                cout << "Your beetle has consumed a leg from your opponent's beetle...\n";
+
+            }
+
+            else if (body.substr(2, 6) == "LLLLLL") {
+
+                body[7] = ' ';
+
+                cout << "Your beetle has consumed a leg from your opponent's beetle...\n";
+
+            }
+
+        }
+
+        break;
+
+
+
+    case 'E':
+
+        if (body.substr(8, 2) == "  ") {
+
+            cout << "There are no eyes on the other beetle to consume...\n";
+
+        }
+
+        else {
+
+            if (body.substr(8, 2) == "E ") {
+
+                body[8] = ' ';
+
+                cout << "Your beetle has consumed an eye from your opponent's beetle...\n";
+
+            }
+
+            else if (body.substr(8, 2) == "EE") {
+
+                body[9] = ' ';
+
+                cout << "Your beetle has consumed an eye from your opponent's beetle...\n";
+
+            }
+
+        }
+
+        break;
+
+
+
+    case 'A':
+
+        if (body.substr(10, 2) == "  ") {
+
+            cout << "There are no antenna on the other beetle to consume...\n";
+
+        }
+
+        else {
+
+            if (body.substr(10, 2) == "A ") {
+
+                body[10] = ' ';
+
+                cout << "Your beetle has consumed an antenna from your opponent's beetle...\n";
+
+            }
+
+            else if (body.substr(10, 2) == "AA") {
+
+                body[11] = ' ';
+
+                cout << "Your beetle has consumed an antenna from your opponent's beetle...\n";
+
+            }
+
+        }
+
+        break;
+
+
+
+    case 'T':
+
+        if (body.substr(12, 1) == " ") {
+
+            cout << "There is no tail on the other beetle to consume...\n";
+
+        }
+
+        else if (body.substr(12, 1) == "T") {
+
+            body[12] = ' ';
+
+            cout << "Your beetle has consumed a tail from your opponent's beetle...\n";
+
+        }
+
+        break;
+
+
+
+    default: break;
+
+    }
+
+}
+
+
+void printBeetle(string body) {
+
+    if (body == "             ") {
+
+        cout << "\n";
+
+        cout << "Oh no... Still waiting for a body...\n";
+
+        cout << "     Please roll a 1!     \n";
+
+    }
+
+    else {
+
+        printAntenna(body);
+
+        printHead(body);
+
+        printBody(body);
+
+        printLegs(body);
+
+    }
+
+}
+
+
+// Beetle Body Parts
+
+void printAntenna(string body) {
+
+    if (body.substr(1, 1) == " ") {
+
+        return;
+
+    }
+
+    else if (body.substr(1, 1) == "H" && body.substr(10, 2) == "A ") {
+
+        cout << "   A                     \n";
+
+        cout << "    A                    \n";
+
+        cout << "     A                   \n";
+
+    }
+
+    else if (body.substr(1, 1) == "H" && body.substr(10, 2) == "AA") {
+
+        cout << "   A         A           \n";
+
+        cout << "    A       A            \n";
+
+        cout << "     A     A             \n";
+
+    }
+
+}
+
+
+void printHead(string body) {
+
+    if (body.substr(1, 1) == " ") {
+
+        return;
+
+    }
+
+    else if (body.substr(1, 1) == "H" && body.substr(8, 2) == "  ") {
+
+        cout << "    HHHHHHHHH            \n";
+
+        cout << "    H       H            \n";
+
+        cout << "    H   L   H            \n";
+
+        cout << "    HHHHHHHHH            \n";
+
+    }
+
+    else if (body.substr(1, 1) == "H" && body.substr(8, 2) == "E ") {
+
+        cout << "    HHHHHHHHH            \n";
+
+        cout << "    H O     H            \n";
+
+        cout << "    H   L   H            \n";
+
+        cout << "    HHHHHHHHH            \n";
+
+    }
+
+    else if (body.substr(1, 1) == "H" && body.substr(8, 2) == "EE") {
+
+        cout << "    HHHHHHHHH            \n";
+
+        cout << "    H O   O H            \n";
+
+        cout << "    H   L   H            \n";
+
+        cout << "    HHHHHHHHH            \n";
+
+    }
+
+}
+
+
+void printBody(string body) {
+
+    if (body.substr(0, 1) == "B" && body.substr(12, 1) == " ") {
+
+        cout << " BBBBBBBBBBBBBBBB        \n";
+
+        cout << " B              B        \n";
+
+        cout << " B              B        \n";
+
+        cout << " B              B        \n";
+
+        cout << " B              B        \n";
+
+        cout << " BBBBBBBBBBBBBBBB        \n";
+
+    }
+
+    else if (body.substr(0, 1) == "B" && body.substr(12, 1) == "T") {
+
+        cout << " BBBBBBBBBBBBBBBB        \n";
+
+        cout << " B              B        \n";
+
+        cout << " B              B        \n";
+
+        cout << " B              B     TTT\n";
+
+        cout << " B              BTTTTT   \n";
+
+        cout << " BBBBBBBBBBBBBBBB     TTT\n";
+
+    }
+
+}
+
+
+void printLegs(string body) {
+
+    if (body.substr(2, 6) == "      ") {
+
+        return;
+
+    }
+
+    if (body.substr(2, 6) == "L     ") {
+
+        cout << " L                       \n";
+
+        cout << " L                       \n";
+
+        cout << "LL                       \n";
+
+    }
+
+    if (body.substr(2, 6) == "LL    ") {
+
+        cout << " L  L                    \n";
+
+        cout << " L  L                    \n";
+
+        cout << "LL LL                    \n";
+
+    }
+
+    if (body.substr(2, 6) == "LLL   ") {
+
+        cout << " L  L  L                 \n";
+
+        cout << " L  L  L                 \n";
+
+        cout << "LL LL LL                 \n";
+
+    }
+
+    if (body.substr(2, 6) == "LLLL  ") {
+
+        cout << " L  L  L  L              \n";
+
+        cout << " L  L  L  L              \n";
+
+        cout << "LL LL LL  LL             \n";
+
+    }
+
+    if (body.substr(2, 6) == "LLLLL ") {
+
+        cout << " L  L  L  L  L           \n";
+
+        cout << " L  L  L  L  L           \n";
+
+        cout << "LL LL LL  LL LL          \n";
+
+    }
+
+    if (body.substr(2, 6) == "LLLLLL") {
+
+        cout << " L  L  L  L  L  L        \n";
+
+        cout << " L  L  L  L  L  L        \n";
+
+        cout << "LL LL LL  LL LL LL       \n";
+
+    }
+
+}
